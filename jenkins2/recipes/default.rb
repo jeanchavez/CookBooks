@@ -1,4 +1,3 @@
-#
 # Cookbook:: jenkins
 # Recipe:: default
 #
