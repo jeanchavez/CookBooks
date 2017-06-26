@@ -1,3 +1,4 @@
+#
 # Cookbook:: jenkins
 # Recipe:: default
 #
@@ -5,19 +6,27 @@
 # Author: jeancarloschavez@gmail.com
 
 
-package "wget"
+case node['platform_family']
+when "rhel"
+	package "wget"
 
-package "java" do
-	action :remove
+	package "java" do
+		action :remove
+	end
+
+#execute "get_java_rpm" do
+#	command "wget --no-cookies --no-check-certificate --header 'Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie' -P /opt 'http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz'"
+#end
+tar_extract 'http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz' do
+  target_dir '/opt'
+  user 'root'
+  #creates '/srv/wordpress_demo/index.php'
+  action :extract
 end
 
-execute "get_java_rpm" do
-	command "wget --no-cookies --no-check-certificate --header 'Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie' -P /opt 'http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz'"
-end
-
-execute "tar_java_rpm_file" do
-	command "tar -C /opt -zxvf /opt/jdk-8u131-linux-x64.tar.gz"
-end
+#execute "tar_java_rpm_file" do
+#	command "tar -C /opt -zxvf /opt/jdk-8u131-linux-x64.tar.gz"
+#end
 
 execute "install_java_rpm" do
 	command "alternatives --install /usr/bin/java java /opt/jdk1.8.0_131/bin/java 2"
@@ -27,7 +36,7 @@ execute "set_java" do
 	command "alternatives --set java /opt/jdk1.8.0_131/bin/java"
 end
 
-Chef::Log.warn('Java has been installed')
+Chef::Log.info('Java has been installed')
 
 
 execute "jenkins_repo" do
@@ -63,4 +72,6 @@ execute "firewall_reload" do
 	command "firewall-cmd --reload"
 end
 
-
+else
+	raise "`#{node['platform_family']}' is not supported!"
+end
